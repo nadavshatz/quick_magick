@@ -475,7 +475,11 @@ module QuickMagick
         current_indent = key_indent
 
         key = key.strip
-        value = value.strip
+        begin
+		value = value.strip
+	rescue
+		value = ''
+	end
         hash_stack.last[key] = value
         last_key = key
       end
