@@ -167,7 +167,7 @@ module QuickMagick
       result = `#{command} 2>"#{error_filepath}"`
       unless $?.success?
         error_message = <<-ERROR
-          Error executing command: command
+          Error executing command: #{command}
           Result is: #{result}
           Error is: #{File.read(error_filepath)}
         ERROR
