@@ -6,8 +6,8 @@ module QuickMagick
     class << self
       
       # create an array of images from the given blob data
-      def from_blob(blob, &proc)
-        file = Tempfile.new(QuickMagick::random_string)
+      def from_blob(blob, format = "", &proc)
+        file = Tempfile.new([QuickMagick::random_string, format])
         file.binmode
         file.write(blob)
         file.close
