@@ -452,7 +452,7 @@ module QuickMagick
 
     # Returns details of the image as found by "identify -verbose" command
     def details
-      str_details = QuickMagick.exec3("identify -verbose #{QuickMagick.c image_filename}[#@index]")
+      str_details = QuickMagick.exec3("identify -verbose #{QuickMagick.c image_filename}[#@index]").force_encoding('iso-8859-1').encode('utf-8')
       # This is something like breadcrumb for hashes visited at any time
       hash_stack = []
       # Current indentation. Used to infer nesting using indentation
