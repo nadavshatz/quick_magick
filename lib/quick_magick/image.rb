@@ -1,17 +1,16 @@
 require "tempfile"
 
 module QuickMagick
-
   class Image
     class << self
 
       # create an array of images from the given blob data
-      def from_blob(blob, format = "", &proc)
-        file = Tempfile.new([QuickMagick::random_string, format])
+      def from_blob(blob, format = '', &proc)
+        file = Tempfile.new([QuickMagick.random_string, format])
         file.binmode
         file.write(blob)
         file.close
-        self.read(file.path, &proc)
+        read(file.path, &proc)
       end
 
       # create an array of images from the given file
@@ -23,7 +22,7 @@ module QuickMagick
           images << Image.new(filename, i, info_line)
         end
         images.each(&proc) if block_given?
-        return images
+        images
       end
 
       alias open read
@@ -138,7 +137,7 @@ module QuickMagick
 
       append average clut coalesce combine composite deconstruct flatten fx hald-clut morph mosaic process reverse separate write
       crop
-      }
+    }
 
     # methods that are called with (=)
     WITH_EQUAL_METHODS =
@@ -148,16 +147,16 @@ module QuickMagick
         undercolor units weight
         brodercolor transparent type size}
 
-    # methods that takes geometry options
-    WITH_GEOMETRY_METHODS =
+      # methods that takes geometry options
+      WITH_GEOMETRY_METHODS =
       %w{density page sampling-factor size tile-offset adaptive-blur adaptive-resize adaptive-sharpen
         annotate blur border chop contrast-stretch extent extract frame gaussian-blur
         geometry lat linear-stretch liquid-rescale motion-blur region repage resample resize roll
         sample scale selective-blur shadow sharpen shave shear sigmoidal-contrast sketch
         splice thumbnail unsharp vignette wave crop}
 
-    # Methods that need special treatment. This array is used just to keep track of them.
-    SPECIAL_COMMANDS =
+      # Methods that need special treatment. This array is used just to keep track of them.
+      SPECIAL_COMMANDS =
       %w{floodfill antialias draw}
 
     IMAGE_SETTINGS_METHODS.each do |method|
@@ -199,7 +198,7 @@ module QuickMagick
 
     # Enables/Disables flood fill. Pass a boolean argument.
     def antialias=(flag)
-    	append_basic flag ? '-antialias' : '+antialias'
+      append_basic flag ? '-antialias' : '+antialias'
     end
 
     # define attribute readers (getters)
@@ -373,14 +372,33 @@ module QuickMagick
       append_to_operators("draw", "#{options_to_str(options)} text #{x0},#{y0} '#{text}'")
     end
 
+    def un_pseudo
+      return self unless @pseudo_image
+
+      tmp_file = Tempfile.new(QuickMagick.random_string)
+      if command_line =~ /-format\s(\S+)\s/
+        # use format set up by user
+        the_format = $1
+      elsif !@pseudo_image
+        # use original image format
+        the_format = format
+      else
+        # default format is jpg
+        the_format = 'jpg'
+      end
+      save "#{the_format}:#{tmp_file.path}"
+
+      QuickMagick::Image.read(tmp_file.path)[0]
+    end
+
     # saves the current image to the given filename
     def save(output_filename)
       result = QuickMagick.exec3 "convert #{command_line} #{QuickMagick.c output_filename}"
-    	if @pseudo_image
-    		# since it's been saved, convert it to normal image (not pseudo)
-    		initialize(output_filename)
-	    	revert!
-    	end
+      if @pseudo_image
+        # since it's been saved, convert it to normal image (not pseudo)
+        initialize(output_filename)
+        revert!
+      end
       return result
     end
 
@@ -400,21 +418,21 @@ module QuickMagick
     alias mogrify! save!
 
     def to_blob
-    	tmp_file = Tempfile.new(QuickMagick::random_string)
-    	if command_line =~ /-format\s(\S+)\s/
-    		# use format set up by user
-    		blob_format = $1
-    	elsif !@pseudo_image
-    		# use original image format
-    		blob_format = self.format
-    	else
-		  	# default format is jpg
-		  	blob_format = 'jpg'
-    	end
-    	save "#{blob_format}:#{tmp_file.path}"
-    	blob = nil
-    	File.open(tmp_file.path, 'rb') { |f| blob = f.read}
-    	blob
+      tmp_file = Tempfile.new(QuickMagick::random_string)
+      if command_line =~ /-format\s(\S+)\s/
+        # use format set up by user
+        blob_format = $1
+      elsif !@pseudo_image
+        # use original image format
+        blob_format = self.format
+      else
+        # default format is jpg
+        blob_format = 'jpg'
+      end
+      save "#{blob_format}:#{tmp_file.path}"
+      blob = nil
+      File.open(tmp_file.path, 'rb') { |f| blob = f.read }
+      blob
     end
 
     # image file format
@@ -486,10 +504,10 @@ module QuickMagick
 
         key = key.strip
         begin
-		value = value.strip
-	rescue
-		value = ''
-	end
+          value = value.strip
+        rescue
+          value = ''
+        end
         hash_stack.last[key] = value
         last_key = key
       end
